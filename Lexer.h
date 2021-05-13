@@ -21,7 +21,7 @@ private:
 public:
     Lexer();
     ~Lexer();
-    void Run(std::string& input);
+    vector<Token*> Run(std::string& input);
     void toString();
     // TODO: add other public methods here
 

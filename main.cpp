@@ -5,21 +5,24 @@
 #include <iostream>
 #include "Token.h"
 #include "MatcherAutomaton.h"
+#include "Parser.h"
 
 using namespace std;
 int main(int argc, char** argv) {
 
     Lexer* lexer = new Lexer();
+    Parser* parser = new Parser();
     string inputFile;
     ifstream inp(argv[1], ifstream::in);
-    inputFile = inp.get();
+    //inputFile = inp.get();
     while(inp.peek() != EOF)
     {
         inputFile += inp.get();
     }
     //cout << inputFile << endl;
     // TODO
-    lexer->Run(inputFile);
+    parser->tokenList = lexer->Run(inputFile);
+    parser->Parse();
     delete lexer;
 
     return 0;

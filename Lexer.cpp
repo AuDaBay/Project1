@@ -17,6 +17,10 @@ Lexer::~Lexer() {
     {
         delete tokens[i];
     }
+    /*for(Automaton* automaton: automata)
+    {
+        delete automaton;
+    }*/
 }
 
 void Lexer::CreateAutomata() {
@@ -38,7 +42,7 @@ void Lexer::CreateAutomata() {
     automata.push_back(new CommentAutomaton());
 }
 
-void Lexer::Run(std::string& input)
+vector<Token*> Lexer::Run(std::string& input)
 {
     // TODO: convert this pseudo-code with the algorithm into actual C++ code
 
@@ -72,7 +76,7 @@ void Lexer::Run(std::string& input)
         }
         // Here is the "Parallel" part of the algorithm
         //   Each automaton runs with the same input
-        for(int i = 0; i < automata.size(); i++)
+        for(unsigned int i = 0; i < automata.size(); i++)
         {
             int inputRead = automata.at(i)->Start(input);
             if (inputRead > maxRead)
@@ -87,7 +91,11 @@ void Lexer::Run(std::string& input)
 
             Token* newToken = maxAutomaton->CreateToken(input.substr(0,maxRead), lineNum);
             lineNum += maxAutomaton->NewLinesRead();
-            tokens.push_back(newToken);
+            if(newToken->getType() != TokenType::COMMENT)
+            {
+                tokens.push_back(newToken);
+            }
+
         }
         // No automaton accepted input
         // Create single character undefined token
@@ -108,7 +116,8 @@ void Lexer::Run(std::string& input)
     Token* eofTok = new Token(TokenType::END_OF_FILE, "", lineNum);
     tokens.push_back(eofTok);
 
-    toString();
+    //toString();
+    return tokens;
 }
 
 void Lexer::toString()

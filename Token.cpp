@@ -35,3 +35,11 @@ void Token::toString()
 {
     cout << "(" << tokenToString(tokenType) << "," << "\"" << actVal <<"\"" << "," << lineNum << ")" << endl;
 }
+TokenType Token::getType()
+{
+    return tokenType;
+}
+string Token::getVal()
+{
+    return actVal;
+}
