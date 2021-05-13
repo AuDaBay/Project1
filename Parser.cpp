@@ -20,7 +20,8 @@ void Parser::Parse()
     }
     catch(Token* error)
     {
-        cout << "Failure!" ; error->toString();
+        cout << "Failure!" << endl;
+        cout<< "  "; error->toString();
     }
 }
 void Parser::parseDatalogProgram(vector<Token*> tokenList)
