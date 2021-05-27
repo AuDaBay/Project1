@@ -12,7 +12,7 @@ Parser::~Parser()
 
 }
 
-void Parser::Parse()
+Datalog Parser::Parse()
 {
     try
     {
@@ -23,6 +23,7 @@ void Parser::Parse()
         cout << "Failure!" << endl;
         cout<< "  "; error->toString();
     }
+    return Lists;
 }
 void Parser::parseDatalogProgram(vector<Token*> tokenList)
 {
@@ -43,8 +44,8 @@ void Parser::parseDatalogProgram(vector<Token*> tokenList)
     parseQuery();
     parseQueryList();
     match(TokenType::END_OF_FILE);
-    cout << "Success!" << endl;
-    Lists.toString();
+    //cout << "Success!" << endl;
+    //Lists.toString();
 }
 void Parser::parseFact()
 {
@@ -224,7 +225,8 @@ void Parser::parseParameter()
         Parameter String;
         match(TokenType::STRING);
         String.setString(prevToken->getVal());
-        //String.paraType = type::STRING;
+        String.paraType = type::STRING;
+        String.isConst();
         parameterList.push_back(String);
     }
     else if(currToken->getType() == TokenType::ID)

@@ -9,7 +9,11 @@ string Parameter::getVal()
 {
     return parameter;
 }
-/*type Parameter::getType()
+
+void Parameter::isConst()
 {
-    return paraType;
-}*/
+    if(paraType == type::STRING)
+    {
+        isConstant = true;
+    }
+}

@@ -12,8 +12,8 @@ public:
     string toString();
     //string toStringQuery();
 
+    vector<Parameter> parameters;
 private:
     string ID;
-    vector<Parameter> parameters;
 };
 #endif //PROJECT1_PREDICATE_H

@@ -2,17 +2,18 @@
 #define PROJECT1_PARAMETER_H
 #include <string>
 using namespace std;
-/*enum class type{
+enum class type{
     ID,
     STRING
-};*/
+};
 class Parameter
 {
 public:
     void setString(string input);
     string getVal();
-    //type paraType = type::ID;
-    //type getType();
+    type paraType = type::ID;
+    void isConst();
+    bool isConstant = false;
 private:
     string parameter;
 

@@ -6,6 +6,7 @@
 #include "Token.h"
 #include "MatcherAutomaton.h"
 #include "Parser.h"
+#include "Interpreter.h"
 
 using namespace std;
 int main(int argc, char** argv) {
@@ -22,7 +23,8 @@ int main(int argc, char** argv) {
     //cout << inputFile << endl;
     // TODO
     parser->tokenList = lexer->Run(inputFile);
-    parser->Parse();
+    Interpreter interpreter = Interpreter(parser->Parse());
+    //interpreter->toString();
     delete lexer;
 
     return 0;

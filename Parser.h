@@ -16,7 +16,7 @@ class Parser
 public:
     Parser();
     ~Parser();
-    void Parse();
+    Datalog Parse();
     vector<Token*> tokenList;
 
 
