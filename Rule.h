@@ -9,9 +9,9 @@ public:
     void setHead(Predicate head);
     void addBody(Predicate body);
     string toString();
-private:
-    Predicate headPredicate;
+
     vector<Predicate> bodyPredicates;
+    Predicate headPredicate;
 
 
 };

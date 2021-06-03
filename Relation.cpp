@@ -124,5 +124,95 @@ void Relation::toString()
     }
 
 }
+Relation Relation::join(Relation relToJoin)
+{
+    Relation newRelation1 = newRelation();
+    vector<int> tupleIndexes;
 
+    for(unsigned int i = 0; i < relToJoin.header.attributes.size(); i++)
+    {
+        bool isThere = false;
+        for(unsigned int j = 0; j < newRelation1.header.attributes.size(); j++)
+        {
+            if(!isThere)
+            {
+                if(newRelation1.header.attributes.at(j) == relToJoin.header.attributes.at(i))
+                {
+                    isThere = true;
+                }
+                else
+                {
+                    isThere = false;
+                }
+            }
+        }
+        if(!isThere)
+        {
+            newRelation1.header.addColumn(relToJoin.header.attributes.at(i));
+            tupleIndexes.push_back(i);
+        }
+    }
+    for(auto t: tuples)
+    {
+        for(auto r: relToJoin.tuples)
+        {
+            if(isJoinable(t, r, header, relToJoin.header))
+            {
+                Tuple joinedTuple = t;
+                for(unsigned int k = 0; k < tupleIndexes.size(); k++)
+                {
+                    joinedTuple.values.push_back(r.values.at(tupleIndexes.at(k)));
+                }
+                newRelation1.addTuple(joinedTuple);
+            }
+        }
+    }
+    return newRelation1;
+}
+bool Relation::isJoinable(Tuple ogTuple, Tuple tupleToAdd, Header ogHeader, Header headerToAdd)
+{
+    for(unsigned int i = 0; i < ogHeader.attributes.size(); i++)
+    {
+        for(unsigned int j = 0; j < headerToAdd.attributes.size(); j++)
+        {
+            if(ogHeader.attributes.at(i) == headerToAdd.attributes.at(j))
+            {
+                if(ogTuple.values.at(i) != tupleToAdd.values.at(j))
+                {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+bool Relation::joinToDatabase(Relation newRelation)
+{
+    bool shouldContinue = false;
+    for(auto t: newRelation.tuples)
+    {
+        if(tuples.insert(t).second)
+        {
+            shouldContinue = true;
+
+            if(header.attributes.size() != 0)
+            {
+                cout << "  ";
+            }
+            for(unsigned int i = 0; i < header.attributes.size(); i++)
+            {
+                cout << header.attributes.at(i) << "=" << t.values.at(i);
+                if(i < header.attributes.size() - 1)
+                {
+                    cout << ", ";
+                }
+            }
+            if(header.attributes.size() != 0)
+            {
+                cout << endl;
+            }
+        }
+    }
+    return shouldContinue;
+}
 int Relation::getTupleSize() {return tuples.size();}

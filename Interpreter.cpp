@@ -6,6 +6,7 @@ Interpreter:: Interpreter(Datalog dataL)
     datalog = dataL;
     SchemeIntoDataB(dataL.getSchemes());
     FactsIntoDataB(dataL.getFacts());
+    evaluateRules(dataL.getRules());
     EvaluateQueries(dataL.getQueries());
 
 
@@ -22,7 +23,7 @@ Relation Interpreter::evaluatePredicate(Predicate query)
     {
         Parameter currParam = query.parameters.at(i);
         //cout << "Current val being evaluated: " << currParam.getVal() << endl;
-        if(currParam.isConstant == true)
+        if(currParam.isConstant)
         {
             //cout << "Constant is: " << currParam.getVal() << endl;
             string val = currParam.getVal();
@@ -41,7 +42,7 @@ Relation Interpreter::evaluatePredicate(Predicate query)
                     currRelation = currRelation.select(i,j);
                 }
             }
-            if(isThere == false)
+            if(!isThere)
             {
                 //cout << "New Variable!" << endl;
                 variables.push_back(currParam.getVal());
@@ -49,12 +50,9 @@ Relation Interpreter::evaluatePredicate(Predicate query)
             }
         }
     }
-//    cout << "String.size() = " << variables.size() << endl;
-//    cout << "Indexes.size() = " << indexes.size() << endl;
-//    cout << "Before project and rename" << currRelation.getTupleSize() << endl;
+
     Relation evaluatedQuery = currRelation.project(indexes);
     currRelation = evaluatedQuery.rename(variables);
-    //cout << "After project and rename" << currRelation.getTupleSize() << endl;
     return currRelation;
 }
 
@@ -84,8 +82,76 @@ void Interpreter::FactsIntoDataB(vector<Predicate> Facts)
 
     }
 }
+void Interpreter::evaluateRules(vector<Rule> Rules)
+{
+    cout << "Rule Evaluation" << endl;
+    bool hasTuples = true;
+    int numPasses = 0;
+    while(hasTuples)
+    {
+        hasTuples = false;
+        numPasses += 1;
+        vector<bool> isThereMore;
+        for(unsigned int i = 0; i < Rules.size(); i++)
+        {
+            cout << Rules.at(i).toString() << "." << endl;
+            vector<Relation> ruleRelations;
+            for (unsigned int j = 0; j < Rules.at(i).bodyPredicates.size(); j++)
+            {
+                Relation newRelation = evaluatePredicate(Rules.at(i).bodyPredicates.at(j));
+                ruleRelations.push_back(newRelation);
+            }
+            //Join them
+            Relation joinedRelation = ruleRelations.at(0);
+            if (ruleRelations.size() > 1)
+            {
+                for (unsigned int k = 0; k < ruleRelations.size() - 1; k++)
+                {
+                    joinedRelation = joinedRelation.join(ruleRelations.at(k+1));
+                }
+            }
+            //project them
+            vector<int> indexes;
+            for (unsigned int a = 0; a < Rules.at(i).headPredicate.parameters.size(); a++)
+            {
+                for (unsigned int b = 0; b < joinedRelation.header.attributes.size(); b++)//this correct?
+                {
+                    if (Rules.at(i).headPredicate.parameters.at(a).getVal() == joinedRelation.header.attributes.at(b))
+                    {
+                        indexes.push_back(b);
+                    }
+                }
+            }
+            joinedRelation = joinedRelation.project(indexes);
+            //rename it to match relation
+            joinedRelation.name = Rules.at(i).headPredicate.getID();
+
+            if (dataBase.database.at(joinedRelation.name).header.attributes.size() ==
+                joinedRelation.header.attributes.size())
+            {
+                for (unsigned int h = 0; h < joinedRelation.header.attributes.size(); h++)
+                {
+                    joinedRelation.header.attributes.at(h) = dataBase.database.at(
+                            joinedRelation.name).header.attributes.at(h);
+                }
+            }
+            //Union with database
+
+            isThereMore.push_back(dataBase.database.at(joinedRelation.name).joinToDatabase(joinedRelation));
+        }
+        for(unsigned int j = 0; j < isThereMore.size(); j++)
+        {
+            if(isThereMore.at(j))
+            {
+                hasTuples = true;
+            }
+        }
+    }
+    cout << endl << "Schemes populated after " << numPasses << " passes through the Rules." << endl << endl;
+}
 void Interpreter::EvaluateQueries(vector<Predicate> Queries)
 {
+    cout << "Query Evaluation" << endl;
     for(unsigned int i = 0; i < Queries.size(); i++)
     {
         Relation evaluatedQuery = evaluatePredicate(Queries.at(i));
