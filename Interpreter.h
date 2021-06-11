@@ -2,6 +2,7 @@
 #define PROJECT1_INTERPRETER_H
 #include "DatalogProgram.h"
 #include "Database.h"
+#include "Graph.h"
 
 class Interpreter{
 public:
@@ -9,7 +10,8 @@ public:
     Relation evaluatePredicate(Predicate query);
     void SchemeIntoDataB(vector<Predicate> Schemes);
     void FactsIntoDataB(vector<Predicate> Facts);
-    void evaluateRules(vector<Rule> Rules);
+    void evaluateRules(vector<Rule> Rules, bool multiple);
+    void ruleOptimization(vector<Rule>Rules);
     void EvaluateQueries(vector<Predicate> Queries);
     void toString();
 private:

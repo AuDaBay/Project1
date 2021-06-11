@@ -6,7 +6,7 @@ Interpreter:: Interpreter(Datalog dataL)
     datalog = dataL;
     SchemeIntoDataB(dataL.getSchemes());
     FactsIntoDataB(dataL.getFacts());
-    evaluateRules(dataL.getRules());
+    ruleOptimization(dataL.getRules());
     EvaluateQueries(dataL.getQueries());
 
 
@@ -82,9 +82,8 @@ void Interpreter::FactsIntoDataB(vector<Predicate> Facts)
 
     }
 }
-void Interpreter::evaluateRules(vector<Rule> Rules)
+void Interpreter::evaluateRules(vector<Rule> Rules, bool multiple)
 {
-    cout << "Rule Evaluation" << endl;
     bool hasTuples = true;
     int numPasses = 0;
     while(hasTuples)
@@ -146,8 +145,87 @@ void Interpreter::evaluateRules(vector<Rule> Rules)
                 hasTuples = true;
             }
         }
+         if(!multiple)
+         {
+          hasTuples = false;
+         }
+
     }
-    cout << endl << "Schemes populated after " << numPasses << " passes through the Rules." << endl << endl;
+    cout << numPasses << " passes: ";
+}
+void Interpreter::ruleOptimization(vector<Rule> Rules)
+{
+    Graph Forward;
+    Graph Backward;
+    //populate the graphs
+    for(unsigned int i = 0; i < Rules.size(); i++)
+    {
+        Node newNode;
+        newNode.ID = i;
+        newNode.selfDependent = false;
+        Forward.nodeList.insert({i, newNode});
+        Backward.nodeList.insert({i,newNode});
+    }
+    for(unsigned int j = 0; j < Rules.size(); j++)
+    {
+        for(unsigned int k = 0; k < Rules.at(j).bodyPredicates.size(); k++)
+        {
+            for(unsigned int l = 0; l < Rules.size(); l++)
+            {
+                if(Rules.at(j).bodyPredicates.at(k).getID() == Rules.at(l).headPredicate.getID())
+                {
+                    bool dependentt = false;
+                    if(j == l)
+                    {
+                        dependentt = true;
+                    }
+                    if(Forward.nodeList.at(j).selfDependent)
+                    {
+                        dependentt = true;
+                    }
+                    Forward.addEdge((int) j,(int) l,dependentt);
+                    Backward.addEdge((int) l,(int) j,dependentt);
+                }
+            }
+        }
+    }
+
+    Forward.toString();
+    Backward.dfsForest();
+    Forward.post_order = Backward.post_order;
+    Forward.dfsForestForward();
+    //cout << "SCC size: " << Forward.scc.size() << endl;
+    cout << "Rule Evaluation" << endl;
+    for(unsigned int i = 0; i < Forward.SCC.size(); i++)
+    {
+        vector<Rule> chosenRules;
+        string outString;
+        bool multi;
+        unsigned int j = 0;
+        //bool trivial;
+
+        for(auto k: Forward.SCC.at(i))
+        {
+            chosenRules.push_back(Rules.at(k));
+            string x = to_string(k);
+            outString += "R" + x;
+            if(Forward.SCC.at(i).size() - 1 != j)
+            {
+                outString += ",";
+            }
+            j++;
+            multi = Forward.nodeList.at(k).selfDependent;
+        }
+        if(Forward.SCC.at(i).size() != 1)
+        {
+            multi = true;
+        }
+
+        cout << "SCC: " << outString << endl;
+        evaluateRules(chosenRules, multi);
+        cout << outString << endl;
+    }
+    cout << endl;
 }
 void Interpreter::EvaluateQueries(vector<Predicate> Queries)
 {
